@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30225.117
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerformanceDashboard", "PerformanceDashboard\PerformanceDashboard.csproj", "{94035133-C55C-4238-9A2F-1C12D7A10204}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerformanceDashboard.Entity", "PerformanceDashboard.Entity\PerformanceDashboard.Entity.csproj", "{9F314BF8-C798-4EE3-B9B3-1D4E7F08465D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{94035133-C55C-4238-9A2F-1C12D7A10204}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94035133-C55C-4238-9A2F-1C12D7A10204}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94035133-C55C-4238-9A2F-1C12D7A10204}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94035133-C55C-4238-9A2F-1C12D7A10204}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F314BF8-C798-4EE3-B9B3-1D4E7F08465D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F314BF8-C798-4EE3-B9B3-1D4E7F08465D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F314BF8-C798-4EE3-B9B3-1D4E7F08465D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F314BF8-C798-4EE3-B9B3-1D4E7F08465D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {69B179E8-2F24-41E7-B2EB-E7C20F8F9DC7}
+	EndGlobalSection
+EndGlobal

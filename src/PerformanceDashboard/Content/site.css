@@ -1,0 +1,44 @@
+﻿/* Style the body */ body {
+    font-family: Arial;
+    margin: 0;
+}
+
+/* Header/Logo Title */ .header {
+    padding: 1px;
+    text-align: center;
+    background: #1abc9c;
+    color: white;
+    font-size: 15px;
+}
+
+/* Page Content */ .content {
+    padding: 1px;
+}
+
+div.relative {
+    position: relative;
+    left: 80px;
+}
+
+div.fortable {
+    position: relative;
+    left: 60px;
+    top: -60px;
+}
+
+div.label {
+    vertical-align: middle;
+    display: table-cell;
+    width: 470px;
+    height: 50px;
+    border: 1px solid #000;
+    background-color: #FFFF97
+}
+
+table.b {
+    table-layout: fixed;
+}
+
+tr.e:hover {
+    background-color: #FCFCBA;
+}
