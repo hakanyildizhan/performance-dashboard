@@ -95,50 +95,64 @@
                     <th bgcolor="#ffff00" align="center" width="80" style='background-color: #ffe135;border: 1px solid #000000'>@scenario.KPI</th>
                     @{
                         var arrowString = "";
-                        switch (scenario.LastTwoRuns.Change.Direction)
-                        {
-                            case Direction.Better:
-                                arrowString = "↗";
-                                break;
-                            case Direction.Worse:
-                                arrowString = "↘";
-                                break;
-                            case Direction.None:
-                            default:
-                                break;
-                        }
+                        var backgroundColor = "#ffffff";
+                        double percentageChange = 0;
+                        var passFailStatus = "N/A";
+                        var passFailStatusBackground = "#ffffff";
 
-                        var backgroundColor = "";
-                        switch (scenario.LastTwoRuns.Change.PerformanceChange)
+                        if (scenario.LastTwoRuns != null)
                         {
-                            case PerformanceChange.Decrease:
-                                backgroundColor = "#ffbd9a";
-                                break;
-                            case PerformanceChange.Increase:
-                                backgroundColor = "#e3ffd5";
-                                break;
-                            case PerformanceChange.Horizontal:
-                                backgroundColor = "#ffffff";
-                                break;
-                            default:
-                                break;
+                            switch (scenario.LastTwoRuns.Change.Direction)
+                            {
+                                case Direction.Better:
+                                    arrowString = "↗";
+                                    break;
+                                case Direction.Worse:
+                                    arrowString = "↘";
+                                    break;
+                                case Direction.None:
+                                default:
+                                    break;
+                            }
+
+                            switch (scenario.LastTwoRuns.Change.PerformanceChange)
+                            {
+                                case PerformanceChange.Decrease:
+                                    backgroundColor = "#ffbd9a";
+                                    break;
+                                case PerformanceChange.Increase:
+                                    backgroundColor = "#e3ffd5";
+                                    break;
+                                case PerformanceChange.Horizontal:
+                                    backgroundColor = "#ffffff";
+                                    break;
+                                default:
+                                    break;
+                            }
+
+                            percentageChange = scenario.LastTwoRuns.Change.PercentageChange;
+
+                            switch (scenario.LastTwoRuns.LastRunStatus)
+                            {
+                                case LastRunStatus.Pass:
+                                    passFailStatus = "PASS";
+                                    passFailStatusBackground = "#78ff00";
+                                    break;
+                                case LastRunStatus.Fail:
+                                    passFailStatus = "FAILED";
+                                    passFailStatusBackground = "#ff8454";
+                                    break;
+                                case LastRunStatus.OK:
+                                    passFailStatus = "OK";
+                                    passFailStatusBackground = "#feff0e";
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
                     }
-                    <th align="center" width="80" style='background-color: @backgroundColor;border: 1px solid #000000'>@scenario.LastTwoRuns.Change.PercentageChange@arrowString</th>
-                    @switch (scenario.LastTwoRuns.LastRunStatus)
-                    {
-                        case LastRunStatus.Pass:
-                            <th align="center" width="80" style='background-color: #78ff00;border: 1px solid #000000'>PASS</th>
-                            break;
-                        case LastRunStatus.Fail:
-                            <th align="center" width="80" style='background-color: #ff8454;border: 1px solid #000000'>FAILED</th>
-                            break;
-                        case LastRunStatus.OK:
-                            <th align="center" width="80" style='background-color: #feff0e;border: 1px solid #000000'>OK</th>
-                            break;
-                        default:
-                            break;
-                    }
+                    <th align="center" width="80" style='background-color: @backgroundColor;border: 1px solid #000000'>@percentageChange@arrowString</th>
+                    <th align="center" width="80" style='background-color: @passFailStatusBackground;border: 1px solid #000000'>@passFailStatus</th>
                     @for (int i = 0; i < Model.TestRuns.Count; i++)
                     {
                         var testRunForThisScenario = Model.TestRuns.ElementAt(i).Value.Where(r => r.ScenarioName.Equals(scenario.Name)).First();

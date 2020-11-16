@@ -39,10 +39,8 @@ namespace PerformanceDashboard.Service
                 var testRunsForScenario = await GetTestRunsForScenario(scenarioEntity.Name, false);
                 if (testRunsForScenario.Count > 1 && testDates.Count > 1)
                 {
-                    double lastRunResult = GetTestRunResultForScenario(testDates[0], scenarioEntity.Name);
-                    double previousRunResult = GetTestRunResultForScenario(testDates[1], scenarioEntity.Name);
-                    scenario.LastTwoRuns = GetLastTwoRunComparison(lastRunResult, previousRunResult, scenarioEntity.KPI);
-
+                    var runResults = GetLastTwoTestRunResultsForScenario(scenarioEntity.Name, testDates[testDates.Count - 1], testDates[0]);
+                    scenario.LastTwoRuns = GetLastTwoRunComparison(runResults.Item1, runResults.Item2, scenarioEntity.KPI);
                 }
                 scenarios.Add(scenario);
             }
@@ -311,6 +309,32 @@ namespace PerformanceDashboard.Service
             comparison.LastRunStatus = GetLastRunStatus(lastValue, kpi);
             comparison.Change = GetChange(lastValue, previousValue);
             return comparison;
+        }
+
+        /// <summary>
+        /// Gets last two runtimes for a scenario between given two dates.
+        /// </summary>
+        /// <param name="scenario"></param>
+        /// <param name="startDate"></param>
+        /// <param name="endDate"></param>
+        /// <returns></returns>
+        private Tuple<double,double> GetLastTwoTestRunResultsForScenario(string scenario, DateTime startDate, DateTime endDate)
+        {
+            var runs = _db.TestRuns.Where(r => r.Scenario.Name.Equals(scenario) && r.Date >= startDate && r.Date <= endDate).OrderByDescending(r => r.Date).ToList();
+
+            if (runs.Any())
+            {
+                if (runs.Count == 1)
+                {
+                    return new Tuple<double, double>(runs[0].Result, 0);
+                }
+                else
+                {
+                    return new Tuple<double, double>(runs[0].Result, runs[1].Result);
+                }
+            }
+
+            return new Tuple<double, double>(0, 0);
         }
     }
 }
