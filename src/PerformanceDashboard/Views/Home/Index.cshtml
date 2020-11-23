@@ -72,9 +72,9 @@
         <label>Filter Scenario Names:</label>
         <input type="text" id="myInput" width="80" onkeyup="filterFunction()" placeholder="Search for Scenario Names..">
         <input type="checkbox" id="perfIncrease" onclick="perfIncFilter()" name="perfIncrease" value="Perf">
-        <label for="perfIncrease">Perf Increase</label>
+        <label for="perfIncrease">Perf. Increase</label>
         <input type="checkbox" id="perfDecrease" onclick="perfDecFilter()" name="perfDecrease" value="Perf2">
-        <label for="perfDecrease">Perf Decrease</label>
+        <label for="perfDecrease">Perf. Decrease</label>
         <button type="button" onclick="clearFunction()">Clear</button>
         <p></p>
         <table class='b' cellpadding='2' id='myTable' style='border: 1px solid #000000;font-size: 8pt;font-family:Arial'>
@@ -111,6 +111,8 @@
                                     arrowString = "↘";
                                     break;
                                 case Direction.None:
+                                    arrowString = "→";
+                                    break;
                                 default:
                                     break;
                             }
@@ -151,7 +153,7 @@
                             }
                         }
                     }
-                    <th align="center" width="80" style='background-color: @backgroundColor;border: 1px solid #000000'>@percentageChange@arrowString</th>
+                    <th align="center" width="80" style='background-color: @backgroundColor;border: 1px solid #000000'>@percentageChange% @arrowString</th>
                     <th align="center" width="80" style='background-color: @passFailStatusBackground;border: 1px solid #000000'>@passFailStatus</th>
                     @for (int i = 0; i < Model.TestRuns.Count; i++)
                     {

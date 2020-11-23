@@ -260,35 +260,41 @@ namespace PerformanceDashboard.Service
                     percentageChange = (change - 1)*100;
                 }
 
+                percentageChange = (float)Math.Round(percentageChange, 2);
 
                 if (!(lastValue < (previousValue * (tolerance + 1)) && lastValue > (previousValue * (1 - tolerance))))
                 {
                     if (change > 1)
                     {
                         performanceChange = PerformanceChange.Decrease;
-                        percentageChange = (float)Math.Round(percentageChange, 2);
                         direction = Direction.Worse;
+                    }
+                    else if (change == 1)
+                    {
+                        performanceChange = PerformanceChange.Horizontal;
+                        direction = Direction.None;
                     }
                     else
                     {
                         performanceChange = PerformanceChange.Increase;
-                        percentageChange = (float)Math.Round(percentageChange, 2);
                         direction = Direction.Better;
                     }
-
                 }
                 else
                 {
                     if (change > 1)
                     {
                         performanceChange = PerformanceChange.Horizontal;
-                        percentageChange = (float)Math.Round(percentageChange, 2);
                         direction = Direction.Worse;
+                    }
+                    else if (change == 1)
+                    {
+                        performanceChange = PerformanceChange.Horizontal;
+                        direction = Direction.None;
                     }
                     else
                     {
                         performanceChange = PerformanceChange.Horizontal;
-                        percentageChange = (float)Math.Round(percentageChange, 2);
                         direction = Direction.Better;
                     }
                 }
