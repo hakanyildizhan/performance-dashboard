@@ -1,6 +1,6 @@
 ﻿function clearFunction() {
-	document.getElementById("myList").selectedIndex = "All"
-	document.getElementById("myInput").value = ''
+	document.getElementById("scenariosDropdown").selectedIndex = "All"
+	document.getElementById("scenarioFilter").value = ''
 	document.getElementById("perfIncrease").checked = false
 	document.getElementById("perfDecrease").checked = false
 	change()
@@ -13,7 +13,7 @@ function perfIncFilter() {
 		document.getElementById("perfDecrease").checked = false
 	}
 	if (document.getElementById("perfIncrease").checked == true) {
-		document.getElementById("myList").selectedIndex = "All"
+		document.getElementById("scenariosDropdown").selectedIndex = "All"
 		change()
 		table = document.getElementById("myTable")
 		tr = table.getElementsByTagName("tr")
@@ -51,7 +51,7 @@ function perfDecFilter() {
 	}
 
 	if (document.getElementById("perfDecrease").checked == true) {
-		document.getElementById("myList").selectedIndex = "All";
+		document.getElementById("scenariosDropdown").selectedIndex = "All";
 		change();
 		table = document.getElementById("myTable");
 		tr = table.getElementsByTagName("tr");
@@ -86,8 +86,8 @@ function perfDecFilter() {
 
 function filterFunction() {
 	var input, filter, table, tr, td, i, txtValue;
-	input = document.getElementById("myInput");
-	var listbox = document.getElementById("myList");
+	input = document.getElementById("scenarioFilter");
+	var listbox = document.getElementById("scenariosDropdown");
 	var selIndex = listbox.selectedIndex;
 	var selValue = listbox.options[selIndex].value;
 

@@ -12,6 +12,8 @@ namespace PerformanceDashboard.Entity.Entity
 
         public virtual TestScenario Scenario { get; set; }
 
+        public virtual TestConfiguration Configuration { get; set; }
+
         public double Result { get; set; }
 
         public DateTime Date { get; set; }

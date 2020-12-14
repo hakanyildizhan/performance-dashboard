@@ -52,12 +52,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DashboardContext.cs" />
-    <Compile Include="Entity\Configuration.cs" />
+    <Compile Include="Entity\Settings.cs" />
+    <Compile Include="Entity\TestConfiguration.cs" />
     <Compile Include="Entity\TestRun.cs" />
     <Compile Include="Entity\TestScenario.cs" />
     <Compile Include="Migrations\202010080741246_Initial.cs" />
     <Compile Include="Migrations\202010080741246_Initial.designer.cs">
       <DependentUpon>202010080741246_Initial.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202012021546539_TestConfiguration.cs" />
+    <Compile Include="Migrations\202012021546539_TestConfiguration.designer.cs">
+      <DependentUpon>202012021546539_TestConfiguration.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -69,6 +74,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\202010080741246_Initial.resx">
       <DependentUpon>202010080741246_Initial.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202012021546539_TestConfiguration.resx">
+      <DependentUpon>202012021546539_TestConfiguration.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

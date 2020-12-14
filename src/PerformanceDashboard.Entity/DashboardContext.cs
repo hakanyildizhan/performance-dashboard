@@ -12,7 +12,8 @@ namespace PerformanceDashboard.Entity
 
         public DbSet<TestScenario> TestScenarios { get; set; }
         public DbSet<TestRun> TestRuns { get; set; }
-        public DbSet<Configuration> Config { get; set; }
+        public DbSet<TestConfiguration> TestConfigurations { get; set; }
+        public DbSet<Settings> Settings { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

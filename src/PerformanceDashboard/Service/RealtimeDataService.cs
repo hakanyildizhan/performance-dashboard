@@ -17,18 +17,24 @@ namespace PerformanceDashboard.Service
             _db = db;
         }
 
-        public async Task<Dictionary<string, string>> GetConfiguration()
+        public async Task<Dictionary<string, string>> GetSettings()
         {
-            var getConfig = _db.Config.ToListAsync();
+            var getSettings = _db.Settings.ToListAsync();
             var result = new Dictionary<string, string>();
-            (await getConfig).ForEach(c => result.Add(c.Key, c.Value));
+            (await getSettings).ForEach(c => result.Add(c.Key, c.Value));
             return result;
         }
 
-        public async Task<IList<Scenario>> GetScenarios()
+        public async Task<IList<Scenario>> GetScenarios(int configurationId)
         {
             var scenariosEntity = await _db.TestScenarios.ToListAsync();
-            var testDates = GetTestRunDates();
+
+            if (configurationId == 0)
+            {
+                configurationId = _db.TestConfigurations.First().Id;
+            }
+
+            var testDates = GetTestRunDates(configurationId);
             var scenarios = new List<Scenario>();
 
             foreach (var scenarioEntity in scenariosEntity)
@@ -36,18 +42,19 @@ namespace PerformanceDashboard.Service
                 var scenario = new Scenario();
                 scenario.KPI = scenarioEntity.KPI;
                 scenario.Name = scenarioEntity.Name;
-                var testRunsForScenario = await GetTestRunsForScenario(scenarioEntity.Name, false);
+                var testRunsForScenario = await GetTestRunsForScenario(configurationId, scenarioEntity.Name, false);
                 if (testRunsForScenario.Count > 1 && testDates.Count > 1)
                 {
                     var runResults = GetLastTwoTestRunResultsForScenario(scenarioEntity.Name, testDates[testDates.Count - 1], testDates[0]);
-                    scenario.LastTwoRuns = GetLastTwoRunComparison(runResults.Item1, runResults.Item2, scenarioEntity.KPI);
+                    var lastTwoRuns = GetLastTwoRunComparison(runResults.Item1, runResults.Item2, scenarioEntity.KPI);
+                    BuildScenarioLastRunData(scenario, lastTwoRuns);
                 }
                 scenarios.Add(scenario);
             }
             return scenarios;
         }
 
-        public async Task<Scenario> GetScenario(string scenarioName)
+        public async Task<Scenario> GetScenario(int configurationId, string scenarioName)
         {
             var scenarioEntity = _db.TestScenarios.Where(s => s.Name.Equals(scenarioName)).FirstOrDefault();
             if (scenarioEntity == null)
@@ -55,7 +62,7 @@ namespace PerformanceDashboard.Service
                 return null;
             }
 
-            var getRuns = GetTestRunsForScenario(scenarioEntity.Name, false);
+            var getRuns = GetTestRunsForScenario(configurationId, scenarioEntity.Name, false);
             var scenario = new Scenario();
             scenario.KPI = scenarioEntity.KPI;
             scenario.Name = scenarioEntity.Name;
@@ -64,20 +71,82 @@ namespace PerformanceDashboard.Service
             {
                 double lastRunResult = runs.ElementAt(0).Value.First().Result;
                 double previousRunResult = runs.ElementAt(1).Value.First().Result;
-                scenario.LastTwoRuns = GetLastTwoRunComparison(lastRunResult, previousRunResult, scenarioEntity.KPI);
+                var lastTwoRuns = GetLastTwoRunComparison(lastRunResult, previousRunResult, scenarioEntity.KPI);
+                BuildScenarioLastRunData(scenario, lastTwoRuns);
             }
 
             return scenario;
         }
 
-        public IList<DateTime> GetTestRunDates()
+        private void BuildScenarioLastRunData(Scenario scenario, LastTwoRuns lastTwoRuns)
         {
-            return _db.TestRuns.ToList().Select(d => d.Date.Date).Distinct().OrderByDescending(d => d).ToList();
+            switch (lastTwoRuns.Change.Direction)
+            {
+                case Direction.Better:
+                    scenario.ChangeDirection = '↗';
+                    break;
+                case Direction.Worse:
+                    scenario.ChangeDirection = '↘';
+                    break;
+                case Direction.None:
+                    scenario.ChangeDirection = '→';
+                    break;
+                default:
+                    break;
+            }
+
+            scenario.PercentageChange = lastTwoRuns.Change.PercentageChange;
+
+            switch (lastTwoRuns.Change.PerformanceChange)
+            {
+                case PerformanceChange.Decrease:
+                    scenario.PercentageChangeIndicatorColor = "#ffbd9a";
+                    break;
+                case PerformanceChange.Increase:
+                    scenario.PercentageChangeIndicatorColor = "#e3ffd5";
+                    break;
+                case PerformanceChange.Horizontal:
+                    scenario.PercentageChangeIndicatorColor = "#ffffff";
+                    break;
+                default:
+                    break;
+            }
+
+            scenario.LastRunStatus = lastTwoRuns.LastRunStatus;
+
+            switch (lastTwoRuns.LastRunStatus)
+            {
+                case LastRunStatus.Pass:
+                    scenario.LastRunIndicatorColor = "#78ff00";
+                    break;
+                case LastRunStatus.Fail:
+                    scenario.LastRunIndicatorColor = "#ff8454";
+                    break;
+                case LastRunStatus.OK:
+                    scenario.LastRunIndicatorColor = "#feff0e";
+                    break;
+                default:
+                    break;
+            }
         }
 
-        public async Task<SortedDictionary<DateTime, IList<Run>>> GetTestRunsForScenario(string scenarioName, bool sortAscending)
+        public IList<DateTime> GetTestRunDates(int configurationId)
         {
-            var testRunsForScenario = await _db.TestRuns.Where(r => r.Scenario.Name.Equals(scenarioName)).ToListAsync();
+            int daysToShow = GetDaysToShow();
+            return _db.TestRuns.Where(r => r.Configuration.Id == configurationId).ToList()
+                .Select(d => d.Date.Date)
+                .Distinct()
+                .OrderByDescending(d => d)
+                .Take(daysToShow)
+                .ToList();
+        }
+
+        public async Task<SortedDictionary<DateTime, IList<Run>>> GetTestRunsForScenario(int configurationId, string scenarioName, bool sortAscending)
+        {
+            var testRunsForScenario = await _db.TestRuns
+                .Where(r => r.Scenario.Name.Equals(scenarioName) && r.Configuration.Id == configurationId)
+                .ToListAsync();
+
             var testRuns = testRunsForScenario.GroupBy(g => g.Date.Date)
                 .Select(r => new
                 {
@@ -94,15 +163,27 @@ namespace PerformanceDashboard.Service
 
             foreach (var testRun in testRuns)
             {
-                result.Add(testRun.Date, new List<Run>() { new Run { ScenarioName = testRun.Scenario.Name, Result = testRun.Result } });
+                result.Add(testRun.Date, new List<Run>() 
+                { 
+                    new Run 
+                    { 
+                        Scenario = testRun.Scenario.Name, 
+                        Result = testRun.Result
+                    } 
+                });
             }
 
             return result;
         }
 
-        public async Task<SortedDictionary<DateTime, IList<Run>>> GetTestRuns(bool sortAscending)
+        public async Task<SortedDictionary<DateTime, IList<Run>>> GetTestRuns(int configurationId, bool sortAscending)
         {
-            var runDates = GetTestRunDates();
+            if (configurationId == 0)
+            {
+                configurationId = _db.TestConfigurations.First().Id;
+            }
+
+            var runDates = GetTestRunDates(configurationId);
             var testRuns = await _db.TestRuns.ToListAsync();
             IList<string> availableScenarios = await _db.TestScenarios.Select(s => s.Name).ToListAsync();
             IComparer<DateTime> comparer = sortAscending ?
@@ -128,7 +209,7 @@ namespace PerformanceDashboard.Service
                 {
                     runs.Add(new Run()
                     {
-                        ScenarioName = testRunForDate.Scenario.Name,
+                        Scenario = testRunForDate.Scenario.Name,
                         Result = testRunForDate.Result
                     });
                 }
@@ -136,9 +217,9 @@ namespace PerformanceDashboard.Service
                 // if a scenario was not run at this date, insert 0
                 foreach (string scenario in availableScenarios)
                 {
-                    if (!runs.Any(r => r.ScenarioName.Equals(scenario)))
+                    if (!runs.Any(r => r.Scenario.Equals(scenario)))
                     {
-                        runs.Add(new Run() { ScenarioName = scenario, Result = 0 });
+                        runs.Add(new Run() { Scenario = scenario, Result = 0 });
                     }
                 }
 
@@ -153,27 +234,35 @@ namespace PerformanceDashboard.Service
             return _db.TestScenarios.Select(s => s.Name).Distinct().OrderBy(name => name).ToList();
         }
 
-        public async Task<IList<ScenarioRun>> GetScenarioRuns(bool sortAscending)
+        public async Task<IList<ScenarioRun>> GetScenarioRuns(int configurationId, bool sortAscending)
         {
-            var testRuns = await GetTestRuns(sortAscending);
+            var testRuns = await GetTestRuns(configurationId, sortAscending);
             var runs = new List<ScenarioRun>();
 
             foreach (var run in testRuns)
             {
-                runs.Add(new ScenarioRun { Date = run.Key.ToTurkishString(), Results = run.Value.OrderBy(r => r.ScenarioName).Select(r => r.Result).ToList() });
+                runs.Add(new ScenarioRun 
+                { 
+                    Date = run.Key.ToTurkishString(), 
+                    Results = run.Value.OrderBy(r => r.Scenario).Select(r => r.Result).ToList() 
+                });
             }
 
             return runs;
         }
 
-        public async Task<IList<ScenarioRun>> GetScenarioRuns(string scenarioName, bool sortAscending)
+        public async Task<IList<ScenarioRun>> GetScenarioRuns(int configurationId, string scenarioName, bool sortAscending)
         {
-            var testRuns = await GetTestRunsForScenario(scenarioName, sortAscending);
+            var testRuns = await GetTestRunsForScenario(configurationId, scenarioName, sortAscending);
             var runs = new List<ScenarioRun>();
 
             foreach (var run in testRuns)
             {
-                runs.Add(new ScenarioRun { Date = run.Key.ToTurkishString(), Results = run.Value.OrderBy(r => r.ScenarioName).Select(r => r.Result).ToList() });
+                runs.Add(new ScenarioRun 
+                { 
+                    Date = run.Key.ToTurkishString(), 
+                    Results = run.Value.OrderBy(r => r.Scenario).Select(r => r.Result).ToList() 
+                });
             }
 
             return runs;
@@ -209,7 +298,7 @@ namespace PerformanceDashboard.Service
             }
         }
 
-        public LastRunStatus GetLastRunStatus(double testResult, double kpi)
+        private LastRunStatus GetLastRunStatus(double testResult, double kpi)
         {
             double tolerance = GetTolerance(testResult);
 
@@ -241,7 +330,7 @@ namespace PerformanceDashboard.Service
             }
         }
 
-        public Change GetChange(double lastValue, double previousValue)
+        private Change GetChange(double lastValue, double previousValue)
         {
             double percentageChange = 0;
             PerformanceChange performanceChange = PerformanceChange.Horizontal;
@@ -309,12 +398,19 @@ namespace PerformanceDashboard.Service
             return new Change() { Direction = direction, PercentageChange = Math.Round(percentageChange,2), PerformanceChange = performanceChange };
         }
 
-        public LastTwoRuns GetLastTwoRunComparison(double lastValue, double previousValue, double kpi)
+        private LastTwoRuns GetLastTwoRunComparison(double lastValue, double previousValue, double kpi)
         {
             var comparison = new LastTwoRuns();
             comparison.LastRunStatus = GetLastRunStatus(lastValue, kpi);
             comparison.Change = GetChange(lastValue, previousValue);
             return comparison;
+        }
+
+        public IList<Configuration> GetConfigurations()
+        {
+            return _db.TestConfigurations
+                .Select(c => new Configuration() { Id = c.Id, Name = c.Name })
+                .ToList();
         }
 
         /// <summary>
@@ -341,6 +437,12 @@ namespace PerformanceDashboard.Service
             }
 
             return new Tuple<double, double>(0, 0);
+        }
+
+        private int GetDaysToShow()
+        {
+            var daysToShowSetting = _db.Settings.FirstOrDefault(s => s.Key == AppConstants.DAYS_TO_SHOW);
+            return daysToShowSetting != null ? Convert.ToInt32(daysToShowSetting.Value) : AppConstants.DAYS_TO_SHOW_DEFAULT;
         }
     }
 }

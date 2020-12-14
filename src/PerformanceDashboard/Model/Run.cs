@@ -2,7 +2,7 @@
 {
     public class Run
     {
-        public string ScenarioName { get; set; }
+        public string Scenario { get; set; }
         public double Result { get; set; }
     }
 }

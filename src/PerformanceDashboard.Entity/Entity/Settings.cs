@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PerformanceDashboard.Entity.Entity
 {
-    public class Configuration
+    public class Settings
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
