@@ -6,14 +6,13 @@ namespace PerformanceDashboard
     {
         public static void RegisterBundles(BundleCollection bundles)
         {
-            bundles.Add(new ScriptBundle("~/bundles/jquery").Include(
-                        "~/Content/lib/jquery/jquery.min.js"));
-
-            bundles.Add(new ScriptBundle("~/bundles/bootstrap").Include(
-                        "~/Content/lib/bootstrap/js/bootstrap.min.js"));
-
-            bundles.Add(new ScriptBundle("~/bundles/site").Include(
-                      "~/Content/site.js"));
+            bundles.Add(new ScriptBundle("~/bundles/scripts").Include(
+                        "~/Content/lib/jquery/jquery.min.js",
+                        "~/Content/lib/bootstrap/js/bootstrap.min.js",
+                        "~/Content/lib/knockout/knockout-latest.min.js",
+                        "~/Content/lib/moment/moment-with-locales.min.js",
+                        "~/Content/lib/google-charts-loader.js",
+                        "~/Content/site.js"));
 
             bundles.Add(new StyleBundle("~/bundles/css").Include(
                       "~/Content/site.css",

@@ -9,6 +9,14 @@
     {
       "library": "twitter-bootstrap@4.5.3",
       "destination": "Content/lib/bootstrap"
+    },
+    {
+      "library": "knockout@3.5.1",
+      "destination": "Content/lib/knockout"
+    },
+    {
+      "library": "moment.js@2.29.1",
+      "destination": "Content/lib/moment"
     }
   ]
 }

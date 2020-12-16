@@ -1,16 +1,9 @@
-﻿@using PerformanceDashboard.Model
-@model DashboardModel
-
-@{
-    ViewBag.Title = $"{Model.ProjectName} Performance Results";
-}
-
-<div class="header">
-    <h1>@Model.ProjectName Performance Dashboard</h1>
+﻿<div class="header">
+    <h1 data-bind="text: $root.ProjectName + 'Performance Dashboard'"></h1>
 </div>
 <div class="content relative">
     <div class="relative">
-        <h2>@Model.ProjectName Performance Result Trends</h2>
+        <h2 data-bind="text: $root.ProjectName + ' Performance Result Trends'"></h2>
     </div>
     <div class="relative chart">
         <div class="label">
@@ -19,9 +12,9 @@
                     <label>Select Test Configuration</label>
                 </div>
                 <div class="col-md-7">
-                    @Html.DropDownListFor(model => model.Configurations,
-                    new SelectList(Model.Configurations.AsEnumerable(), "Id", "Name"),
-                    new { @id = "configurationsDropdown", @class = "form-control", @onchange = "change();filterFunction();" })
+                    <select data-bind="foreach: Configurations" class="form-control" id="configurationsDropdown" onchange="changeConfiguration();filterFunction();">
+                        <option data-bind="value: Id, text: Name"></option>
+                    </select>
                 </div>
             </div>
             <div class="col-md-12 filter row">
@@ -29,9 +22,12 @@
                     <label>Select Test Scenario</label>
                 </div>
                 <div class="col-md-7">
-                    @Html.DropDownListFor(model => model.Scenarios,
-                    new SelectList(Model.Scenarios.AsEnumerable(), "Name", "Name"),
-                    new { @id = "scenariosDropdown", @class = "form-control", @onchange = "change();filterFunction();" })
+                    <select class="form-control" id="scenariosDropdown" onchange="changeScenario();filterFunction();">
+                        <option value="All">All</option>
+                        <!-- ko foreach: Scenarios -->
+                        <option data-bind="value: Name, text: Name"></option>
+                        <!-- /ko -->
+                    </select>
                 </div>
             </div>
         </div>
@@ -93,32 +89,29 @@
                     <th style='background-color: #B8DBFD;border: 1px solid #000000'>Reference Values (sec)</th>
                     <th style='background-color: #B8DBFD;border: 1px solid #000000'>Perf Comp: Latest VS PreviousExe</th>
                     <th style='background-color: #B8DBFD;border: 1px solid #000000'>Latest Result vs Reference</th>
-                    @for (int i = 0; i < Model.TestRuns.Count; i++)
-                    {
-                        <th width="80" style='background-color: #B8DBFD;border: 1px solid #000000'>@(i == 0 ? "Latest Results" : "Test Date"): @Model.TestRuns.ElementAt(i).Key.ToTurkishString()</th>
-                    }
+                    <!-- ko foreach: TestRuns -->
+                    <th width="80" style='background-color: #B8DBFD;border: 1px solid #000000' data-bind="text: $index() === 0 ? 'Latest Results'+': '+moment(Key).format('DD.MM.YYYY') : 'Test Date'+': '+moment(Key).format('DD.MM.YYYY')"></th>
+                    <!-- /ko -->
                 </tr>
-                @foreach (var scenario in Model.Scenarios)
-                {
-                    <tr class="e">
-                        <th class="text-left" width="250" align="left" style='border: 1px solid #000000'>@scenario.Name</th>
-                        <th bgcolor="#ffff00" align="center" width="80" style='background-color: #ffe135;border: 1px solid #000000'>@scenario.KPI</th>
-                        <th align="center" width="80" style='background-color: @scenario.PercentageChangeIndicatorColor;border: 1px solid #000000'>@scenario.PercentageChange% @scenario.ChangeDirection</th>
-                        <th align="center" width="80" style='background-color: @scenario.LastRunIndicatorColor;border: 1px solid #000000'>@scenario.LastRunStatus</th>
-                        @for (int i = 0; i < Model.TestRuns.Count; i++)
-                        {
-                            var testRunForThisScenario = Model.TestRuns.ElementAt(i).Value.Where(r => r.Scenario.Equals(scenario.Name)).First();
-                            if (i == 0)
-                            {
-                                <th align="center" width="80" style='background-color: #feffc1;border: 1px solid #000000'>@testRunForThisScenario.Result</th>
-                            }
-                            else
-                            {
-                                <td align="center" width="80" style='border: 1px solid #000000'>@testRunForThisScenario.Result</td>
-                            }
-                        }
-                    </tr>
-                }
+
+                <!-- ko foreach: Scenarios -->
+                <tr class="e">
+                    <th class="text-left" width="250" align="left" style='border: 1px solid #000000' data-bind="text: Name"></th>
+                    <th bgcolor="#ffff00" align="center" width="80" style='background-color: #ffe135;border: 1px solid #000000' data-bind="text: KPI"></th>
+                    <th align="center" width="80" data-bind="style: { backgroundColor: PercentageChangeIndicatorColor, border: '1px solid #000000' }, text: PercentageChange + '% ' + ChangeDirection"></th>
+                    <th align="center" width="80" data-bind="style: { backgroundColor: LastRunIndicatorColor, border: '1px solid #000000' }, text: LastRunStatus === 0 ? 'PASS' : LastRunStatus === 1 ? 'FAIL' : 'OK'"></th>
+                    <!-- ko foreach: $root.TestRuns -->
+                    <!-- ko let: { testRunForThisScenario: getTestRunForScenario(Value, $parent.Name) } -->
+                    <!-- ko if: $index() === 0 -->
+                    <th align="center" width="80" style='background-color: #feffc1;border: 1px solid #000000' data-bind="text: testRunForThisScenario.Result"></th>
+                    <!-- /ko -->
+                    <!-- ko if: $index() !== 0 -->
+                    <td align="center" width="80" style='border: 1px solid #000000' data-bind="text: testRunForThisScenario.Result"></td>
+                    <!-- /ko -->
+                    <!-- /ko -->
+                    <!-- /ko -->
+                </tr>
+                <!-- /ko -->
             </table>
         </div>
     </div>
@@ -127,16 +120,44 @@
 
 @section scripts {
     <script type="text/javascript">
+        var dashboardViewModel = new Object();
         $(document).ready(function () {
-            var allScenariosOption = new Option("All", "All");
-            allScenariosOption.selected = true;
-            $("#scenariosDropdown").prepend(allScenariosOption);
+            ko.options.deferUpdates = true;
+            $.getJSON("/Home/GetConfigurationData", function (data) {
+                dashboardViewModel = {
+                    ProjectName: data.ProjectName,
+                    Scenarios: ko.observable(data.Scenarios),
+                    Configurations: data.Configurations,
+                    TestRuns: ko.observable(data.TestRuns)
+                }
+                ko.applyBindings(dashboardViewModel);
+            })
+
             google.charts.load('current', { 'packages': ['corechart'] });
-            google.charts.setOnLoadCallback(drawChart);
+            google.charts.setOnLoadCallback(updateChartOnConfigurationChange);
         })
 
-        function drawChart(data) {
-            var data = new google.visualization.DataTable();
+        function getTestRunForScenario(testRuns, scenario) {
+            var match = ko.utils.arrayFirst(testRuns, function (item) {
+                return item.Scenario == scenario;
+            });
+            return match;
+        }
+
+        function updateChartOnConfigurationChange() {
+            var configuration = $("#configurationsDropdown option:selected").val();
+            drawChart(configuration, "All");
+        }
+
+        function updateChartOnScenarioChange() {
+            var configuration = $("#configurationsDropdown option:selected").val();
+            var scenarioDropDown = document.getElementById("scenariosDropdown");
+            var selIndex = scenarioDropDown.selectedIndex;
+            var scenario = scenarioDropDown.options[selIndex].value;
+            drawChart(configuration, scenario);
+        }
+
+        function drawChart(configuration, scenario) {
 
             var options = {
                 curveType: 'function', legend: {
@@ -161,17 +182,12 @@
             };
             var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
 
-            var listbox = document.getElementById("scenariosDropdown");
-            var selIndex = listbox.selectedIndex;
-            var selValue = listbox.options[selIndex].value;
-            var selConfiguration = $("#configurationsDropdown option:selected").val();
-
             $.ajax({
-                url: '@Url.Action("GetScenarioDataForConfigurationAsync", "Home")',
+                url: '@Url.Action("GetChartData", "Home")',
                 dataType: "json",
                 type: "POST",
                 async: true,
-                data: { "configurationId": selConfiguration, "scenario": selValue },
+                data: { "configurationId": configuration, "scenario": scenario },
                 error: function (xhr, status, error) {
                     console.log(error);
                 },
@@ -216,10 +232,20 @@
             }
         }
 
-        function change() {
-            try { document.getElementById("scenarioFilter").value = ''; }
-            catch { }
-            google.charts.setOnLoadCallback(drawChart);
+        function changeConfiguration() {
+            document.getElementById("scenarioFilter").value = '';
+            google.charts.setOnLoadCallback(updateChartOnConfigurationChange);
+
+            var configuration = $("#configurationsDropdown option:selected").val();
+            $.getJSON("/Home/GetConfigurationData", { "configurationId": configuration }, function (data) {
+                dashboardViewModel.Scenarios(data.Scenarios);
+                dashboardViewModel.TestRuns(data.TestRuns);
+            });
+        }
+
+        function changeScenario() {
+            document.getElementById("scenarioFilter").value = '';
+            google.charts.setOnLoadCallback(updateChartOnScenarioChange);
         }
     </script>
 }

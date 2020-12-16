@@ -27,12 +27,12 @@ namespace PerformanceDashboard.Service
 
         public async Task<IList<Scenario>> GetScenarios(int configurationId)
         {
-            var scenariosEntity = await _db.TestScenarios.ToListAsync();
-
             if (configurationId == 0)
             {
                 configurationId = _db.TestConfigurations.First().Id;
             }
+
+            var scenariosEntity = await _db.TestRuns.Where(r => r.Configuration.Id == configurationId).Select(r => r.Scenario).Distinct().ToListAsync();
 
             var testDates = GetTestRunDates(configurationId);
             var scenarios = new List<Scenario>();
@@ -45,7 +45,7 @@ namespace PerformanceDashboard.Service
                 var testRunsForScenario = await GetTestRunsForScenario(configurationId, scenarioEntity.Name, false);
                 if (testRunsForScenario.Count > 1 && testDates.Count > 1)
                 {
-                    var runResults = GetLastTwoTestRunResultsForScenario(scenarioEntity.Name, testDates[testDates.Count - 1], testDates[0]);
+                    var runResults = GetLastTwoTestRunResultsForScenario(configurationId, scenarioEntity.Name, testDates[testDates.Count - 1], testDates[0]);
                     var lastTwoRuns = GetLastTwoRunComparison(runResults.Item1, runResults.Item2, scenarioEntity.KPI);
                     BuildScenarioLastRunData(scenario, lastTwoRuns);
                 }
@@ -184,8 +184,8 @@ namespace PerformanceDashboard.Service
             }
 
             var runDates = GetTestRunDates(configurationId);
-            var testRuns = await _db.TestRuns.ToListAsync();
-            IList<string> availableScenarios = await _db.TestScenarios.Select(s => s.Name).ToListAsync();
+            var testRuns = await _db.TestRuns.Where(r => r.Configuration.Id == configurationId).ToListAsync();
+            IList<string> availableScenarios = testRuns.Select(r => r.Scenario.Name).ToList();
             IComparer<DateTime> comparer = sortAscending ?
                     Comparer<DateTime>.Create((x, y) => x.CompareTo(y)) :
                     Comparer<DateTime>.Create((x, y) => y.CompareTo(x));
@@ -420,9 +420,13 @@ namespace PerformanceDashboard.Service
         /// <param name="startDate"></param>
         /// <param name="endDate"></param>
         /// <returns></returns>
-        private Tuple<double,double> GetLastTwoTestRunResultsForScenario(string scenario, DateTime startDate, DateTime endDate)
+        private Tuple<double,double> GetLastTwoTestRunResultsForScenario(int configurationId, string scenario, DateTime startDate, DateTime endDate)
         {
-            var runs = _db.TestRuns.Where(r => r.Scenario.Name.Equals(scenario) && r.Date >= startDate && r.Date <= endDate).OrderByDescending(r => r.Date).ToList();
+            var runs = _db.TestRuns.Where(r => 
+                    r.Configuration.Id == configurationId && 
+                    r.Scenario.Name.Equals(scenario) && 
+                    r.Date >= startDate && r.Date <= endDate)
+                .OrderByDescending(r => r.Date).ToList();
 
             if (runs.Any())
             {
