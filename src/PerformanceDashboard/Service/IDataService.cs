@@ -18,5 +18,7 @@ namespace PerformanceDashboard.Service
         Task<Scenario> GetScenario(int configurationId, string scenarioName);
         double GetTolerance(double testResult);
         IList<Configuration> GetConfigurations();
+        int GetDaysToShow();
+        Task SetDaysToShow(int days);
     }
 }

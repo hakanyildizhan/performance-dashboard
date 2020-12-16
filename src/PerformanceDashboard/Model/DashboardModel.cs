@@ -5,6 +5,9 @@ namespace PerformanceDashboard.Model
 {
     public class DashboardModel
     {
+        /// <summary>
+        /// Name of the project.
+        /// </summary>
         public string ProjectName { get; set; }
 
         /// <summary>
@@ -21,5 +24,10 @@ namespace PerformanceDashboard.Model
         /// Test results by date.
         /// </summary>
         public SortedDictionary<DateTime, IList<Run>> TestRuns { get; set; }
+
+        /// <summary>
+        /// Maximum number of results to show in the chart & results table.
+        /// </summary>
+        public int MaxResultsToShow { get; set; }
     }
 }

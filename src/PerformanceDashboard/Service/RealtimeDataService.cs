@@ -443,10 +443,22 @@ namespace PerformanceDashboard.Service
             return new Tuple<double, double>(0, 0);
         }
 
-        private int GetDaysToShow()
+        public int GetDaysToShow()
         {
             var daysToShowSetting = _db.Settings.FirstOrDefault(s => s.Key == AppConstants.DAYS_TO_SHOW);
             return daysToShowSetting != null ? Convert.ToInt32(daysToShowSetting.Value) : AppConstants.DAYS_TO_SHOW_DEFAULT;
+        }
+
+        public async Task SetDaysToShow(int days)
+        {
+            if (days <= 0)
+            {
+                return;
+            }
+
+            var daysToShowSetting = _db.Settings.FirstOrDefault(s => s.Key == AppConstants.DAYS_TO_SHOW);
+            daysToShowSetting.Value = days.ToString();
+            await _db.SaveChangesAsync();
         }
     }
 }

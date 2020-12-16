@@ -28,13 +28,15 @@ namespace PerformanceDashboard.Controllers
             model.Scenarios = await _dataService.GetScenarios(configurationId);
             model.Configurations = _dataService.GetConfigurations();
             model.TestRuns = await _dataService.GetTestRuns(configurationId, false);
+            model.MaxResultsToShow = _dataService.GetDaysToShow();
 
             return Json(new 
             { 
                 ProjectName = model.ProjectName, 
                 Scenarios = model.Scenarios, 
                 Configurations = model.Configurations, 
-                TestRuns = model.TestRuns.ToArray() 
+                TestRuns = model.TestRuns.ToArray(),
+                MaxResultsToShow = model.MaxResultsToShow
             }, JsonRequestBehavior.AllowGet);
         }
 
@@ -55,6 +57,13 @@ namespace PerformanceDashboard.Controllers
             }
             
             return Json(data);
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> SetMaxDaysToShow(int daysToShow)
+        {
+            await _dataService.SetDaysToShow(daysToShow);
+            return Json(new { Status = "OK" });
         }
     }
 }
