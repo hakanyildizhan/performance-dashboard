@@ -84,10 +84,10 @@
                 </fieldset>
             </div>
         </div>
-        
+
         <div id="curve_chart"></div>
     </div>
-    
+
     <div class="relative">
         <div class="table-filters">
             <label>Filter Scenario Names:</label>
@@ -135,8 +135,12 @@
 @section scripts {
     <script type="text/javascript">
         var dashboardViewModel = new Object();
+        var chartElement;
+
         $(document).ready(function () {
+            chartElement = document.getElementById('curve_chart');
             ko.options.deferUpdates = true;
+            setChartLoadingStatus(true);
             $.getJSON("@Url.Action("GetConfigurationData", "Home")", function (data) {
 
                 // pre-select configured days to show setting
@@ -152,12 +156,17 @@
 
                 // bind observable data
                 ko.applyBindings(dashboardViewModel);
-            })
 
-            google.charts.load('current', { 'packages': ['corechart'] });
-            google.charts.setOnLoadCallback(updateChartOnConfigurationChange);
-        })
+                google.charts.load('current', { 'packages': ['corechart'] });
+                google.charts.setOnLoadCallback(updateChartOnConfigurationChange);
+            });
+        });
 
+        /**
+         * Utility function for knockout binding. Returns the test run from a list of test runs that belong to given scenario.
+         * @@param {Array} testRuns Array of test runs.
+         * @@param {string} scenario Scenario name.
+         */
         function getTestRunForScenario(testRuns, scenario) {
             var match = ko.utils.arrayFirst(testRuns, function (item) {
                 return item.Scenario == scenario;
@@ -165,12 +174,27 @@
             return match;
         }
 
+        /**
+         * Draws the chart when selected configuration is changed.
+         */
         function updateChartOnConfigurationChange() {
+            if (dashboardViewModel.Configurations.length === 0) {
+                google.visualization.errors.addError(chartElement, "No test configuration data to display.");
+                return;
+            }
+
             var configuration = $("#configurationsDropdown option:selected").val();
-            drawChart(configuration, "All");
+
+            if (configuration !== '') {
+                drawChart(configuration, "All");
+            }
         }
 
+        /**
+         * Draws the chart when selected scenario is changed.
+         */
         function updateChartOnScenarioChange() {
+            setChartLoadingStatus(true);
             var configuration = $("#configurationsDropdown option:selected").val();
             var scenarioDropDown = document.getElementById("scenariosDropdown");
             var selIndex = scenarioDropDown.selectedIndex;
@@ -178,6 +202,11 @@
             drawChart(configuration, scenario);
         }
 
+        /**
+         * Draws the chart according to given configuration ID and scenario name.
+         * @@param {number} configuration ID of the selected configuration.
+         * @@param {string} scenario Selected scenario name.
+         */
         function drawChart(configuration, scenario) {
 
             var options = {
@@ -201,7 +230,7 @@
                     textStyle: { fontSize: 12 }
                 }
             };
-            var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+            var chart = new google.visualization.LineChart(chartElement);
 
             $.ajax({
                 url: '@Url.Action("GetChartData", "Home")',
@@ -211,12 +240,17 @@
                 data: { "configurationId": configuration, "scenario": scenario },
                 error: function (xhr, status, error) {
                     console.log(error);
+                    google.visualization.errors.addError(chartElement, error);
                 },
                 success: function (data) {
                     PrepareChart(data);
                 }
             });
 
+            /**
+             * Draws the chart.
+             * @@param {Object} data Chart data from the server.
+             */
             function PrepareChart(data) {
                 var dataArray = [];
                 var headers = ['Date'];
@@ -249,26 +283,38 @@
                 var data = google.visualization.arrayToDataTable(dataArray);
                 var view = new google.visualization.DataView(data);
                 view.setColumns(resultIndicesAnnotation);
+                setChartLoadingStatus(false);
                 chart.draw(view, options);
             }
         }
 
+        /**
+         * Call to reload the chart & results table when configuration selection is changed.
+         */
         function changeConfiguration() {
+            setChartLoadingStatus(true);
             document.getElementById("scenarioFilter").value = '';
             google.charts.setOnLoadCallback(updateChartOnConfigurationChange);
 
             var configuration = $("#configurationsDropdown option:selected").val();
             $.getJSON("@Url.Action("GetConfigurationData", "Home")", { "configurationId": configuration }, function (data) {
+                setChartLoadingStatus(false);
                 dashboardViewModel.Scenarios(data.Scenarios);
                 dashboardViewModel.TestRuns(data.TestRuns);
             });
         }
 
+        /**
+         * Call to reload the chart when scenario selection is changed.
+         */
         function changeScenario() {
             document.getElementById("scenarioFilter").value = '';
             google.charts.setOnLoadCallback(updateChartOnScenarioChange);
         }
 
+        /**
+         * Updates the count of shown results server & client side.
+         */
         function updateMaxShownResults() {
             var resultsToShow = $("#maxResults option:selected").val();
 
@@ -285,6 +331,21 @@
                     changeConfiguration();
                 }
             });
+        }
+
+        /**
+         * Displays a spinner while the chart is loading, or removes it.
+         * @@param {Boolean} isLoading Set this to true in order to display a spinner. Set it to false to remove any existing spinner.
+         */
+        function setChartLoadingStatus(isLoading) {
+            if (isLoading) {
+                $('#curve_chart div').remove();
+                $('#curve_chart').removeClass('loaded');
+                $('#curve_chart').append("<div class=\"vertical-center\"><div class=\"spinner-grow m-5\" style=\"width: 3rem; height: 3rem;\" role=\"status\"><span class=\"sr-only\"></span></div></div>");
+            } else {
+                $('#curve_chart div.vertical-center').remove();
+                $('#curve_chart').addClass('loaded');
+            }
         }
     </script>
 }

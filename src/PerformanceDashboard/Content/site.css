@@ -64,8 +64,16 @@ table {
     table-layout: fixed;
 }
 
-div#curve_chart {
+div#curve_chart.loaded {
     height: 600px;
+}
+
+.vertical-center {
+    min-height: 100%; /* Fallback for browsers do NOT support vh unit */
+    min-height: 100vh; /* These two lines are counted as one :-)       */
+    display: flex;
+    align-items: center;
+    margin-left: 40%;
 }
 
 tr.e:hover {
