@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+	<Fragment>
+
+		<ComponentGroup Id="TransformWebConfig" >
+			<ComponentRef Id="TransformWebConfigWinUser" />
+			<ComponentRef Id="TransformWebConfigSAUser" />
+		</ComponentGroup>
+
+		<!-- Default: C:\inetpub\wwwroot\PerformanceDashboard-->
+		<DirectoryRef Id="INSTALLFOLDER">
+
+			<!-- Web.config transform - Windows authentication -->
+			<Component Id="TransformWebConfigWinUser" KeyPath="yes" Guid="{383E9161-D53B-49FF-B65B-D61F9029F44F}">
+				<Condition><![CDATA[DB_AUTHENTICATIONMODE = "0"]]></Condition>
+				<util:XmlFile Id="webconfigsa"
+							  File="[INSTALLFOLDER]Web.config"
+							  Action="setValue"
+							  ElementPath="/configuration/connectionStrings/add[\[]@name='PerformanceDashboardContext'[\]]/@connectionString"
+							  Value="Data Source=[DB_SERVER];Initial Catalog=PerformanceDashboard;Integrated Security=SSPI;MultipleActiveResultSets=true;" Permanent="yes" />
+			</Component>
+
+			<!-- Web.config transform - User authentication -->
+			<Component Id="TransformWebConfigSAUser" KeyPath="yes" Guid="{1C8846A5-1E9D-44F6-BE7D-C9699B837FF0}">
+				<Condition><![CDATA[DB_AUTHENTICATIONMODE = "1"]]></Condition>
+				<util:XmlFile Id="webconfigwin"
+							  File="[INSTALLFOLDER]Web.config"
+							  Action="setValue"
+							  ElementPath="/configuration/connectionStrings/add[\[]@name='PerformanceDashboardContext'[\]]/@connectionString"
+							  Value="Data Source=[DB_SERVER];Initial Catalog=PerformanceDashboard;User Id=[DB_USER];Password=[DB_PASSWORD];MultipleActiveResultSets=true;" Permanent="yes" />
+			</Component>
+
+		</DirectoryRef>
+	</Fragment>
+</Wix>

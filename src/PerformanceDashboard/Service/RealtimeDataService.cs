@@ -457,7 +457,16 @@ namespace PerformanceDashboard.Service
             }
 
             var daysToShowSetting = _db.Settings.FirstOrDefault(s => s.Key == AppConstants.DAYS_TO_SHOW);
-            daysToShowSetting.Value = days.ToString();
+
+            if (daysToShowSetting == null)
+            {
+                _db.Settings.Add(new Entity.Entity.Settings { Key = AppConstants.DAYS_TO_SHOW, Value = days.ToString() });
+            }
+            else
+            {
+                daysToShowSetting.Value = days.ToString();
+            }
+            
             await _db.SaveChangesAsync();
         }
     }

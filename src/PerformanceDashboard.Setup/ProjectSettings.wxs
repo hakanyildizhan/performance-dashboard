@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+         xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+	<Fragment>
+
+		<!-- Properties -->
+		<Property Id="PROJECT_NAME" >
+			<RegistrySearch Id="PROJECT_NAME_RegistrySearch"
+							Root="HKLM"
+							Key="Software\Hakan Yildizhan\PerformanceDashboard"
+							Name="PROJECT_NAME"
+							Type="raw"/>
+		</Property>
+
+		<!-- Components -->
+		<ComponentGroup Id="ProjectSettings">
+			<ComponentRef Id="ProjectSettingsRegistryEntries" />
+		</ComponentGroup>
+
+		<DirectoryRef Id="INSTALLFOLDER">
+
+			<Component Id="ProjectSettingsRegistryEntries" Guid="{6D5AE399-1674-4E3F-A6D7-8ED03039FE3D}">
+
+				<RegistryKey Root="HKLM"
+							 Key="Software\Hakan Yildizhan\PerformanceDashboard">
+					<RegistryValue Type="string" Name="PROJECT_NAME" Value="[PROJECT_NAME]" />
+				</RegistryKey>
+
+			</Component>
+		</DirectoryRef>
+	</Fragment>
+</Wix>
