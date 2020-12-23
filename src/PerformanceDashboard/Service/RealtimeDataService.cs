@@ -43,12 +43,27 @@ namespace PerformanceDashboard.Service
                 scenario.KPI = scenarioEntity.KPI;
                 scenario.Name = scenarioEntity.Name;
                 var testRunsForScenario = await GetTestRunsForScenario(configurationId, scenarioEntity.Name, false);
+                
                 if (testRunsForScenario.Count > 1 && testDates.Count > 1)
                 {
                     var runResults = GetLastTwoTestRunResultsForScenario(configurationId, scenarioEntity.Name, testDates[testDates.Count - 1], testDates[0]);
                     var lastTwoRuns = GetLastTwoRunComparison(runResults.Item1, runResults.Item2, scenarioEntity.KPI);
                     BuildScenarioLastRunData(scenario, lastTwoRuns);
                 }
+                else if (testRunsForScenario.Count == 1)
+                {
+                    BuildScenarioLastRunData(scenario, new LastTwoRuns
+                    {
+                        Change = new Change 
+                        { 
+                            Direction = Direction.None, 
+                            PercentageChange = 0, 
+                            PerformanceChange = PerformanceChange.Horizontal  
+                        },
+                        LastRunStatus = scenario.LastRunStatus
+                    });
+                }
+
                 scenarios.Add(scenario);
             }
             return scenarios;
