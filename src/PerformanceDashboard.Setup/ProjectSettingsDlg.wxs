@@ -6,18 +6,24 @@
 				<Control Id="LblProjectNameDesc" Type="Text" X="68" Y="68" Width="210" Height="14" TabSkip="no" Text="Please enter the name of your project below." />
 				<Control Type="Text" Id="LblProjectName" Width="64" Height="16" X="68" Y="101" Text="Project Name :" />
 				<Control Type="Edit" Id="TxtProjectName" Width="133" Height="15" X="139" Y="98" Property="PROJECT_NAME" />
-				<Control Type="Text" Id="LblProjectNameDesc2" Width="220" Height="21" X="68" Y="139" Text="It will be displayed on the dashboard header as &quot;[ProjectName] Performance Dashboard&quot;." />
+				<Control Type="Text" Id="LblProjectNameDesc2" Width="220" Height="21" X="68" Y="139" Text="It will be displayed on the dashboard header as &quot;(ProjectName) Performance Dashboard&quot;." />
 
 				<Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Text="Back">
 				</Control>
 				<Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Text="Next">
-					<Condition Action="disable"><![CDATA[PROJECT_NAME = ""]]></Condition>
-					<Condition Action="enable"><![CDATA[PROJECT_NAME <> ""]]></Condition>
+					<Publish Event="SpawnDialog" Value="ProjectNameError"><![CDATA[PROJECT_NAME = ""]]></Publish>
 				</Control>
 				<Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes" Text="!(loc.WixUICancel)">
 					<Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
 				</Control>
 
+			</Dialog>
+
+			<Dialog Id="ProjectNameError" Width="260" Height="85" NoMinimize="no" Title="[ProductName] Setup">
+				<Control Id="ProjectNameErrorDesc" Type="Text" Width="194" Height="30" X="48" Y="15" Text="Please enter a project name." />
+				<Control Id="ProjectNameErrorOk" Type="PushButton" X="97" Y="57" Width="56" Height="17" Text="Ok">
+					<Publish  Event="EndDialog" Value="Return">1</Publish>
+				</Control>
 			</Dialog>
 		</UI>
 	</Fragment>

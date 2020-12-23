@@ -17,7 +17,7 @@
 				<util:XmlFile Id="webconfigsa"
 							  File="[INSTALLFOLDER]Web.config"
 							  Action="setValue"
-							  ElementPath="/configuration/connectionStrings/add[\[]@name='PerformanceDashboardContext'[\]]/@connectionString"
+							  ElementPath="/configuration/connectionStrings/add[\[]@name='DashboardContext'[\]]/@connectionString"
 							  Value="Data Source=[DB_SERVER];Initial Catalog=PerformanceDashboard;Integrated Security=SSPI;MultipleActiveResultSets=true;" Permanent="yes" />
 			</Component>
 
@@ -27,7 +27,7 @@
 				<util:XmlFile Id="webconfigwin"
 							  File="[INSTALLFOLDER]Web.config"
 							  Action="setValue"
-							  ElementPath="/configuration/connectionStrings/add[\[]@name='PerformanceDashboardContext'[\]]/@connectionString"
+							  ElementPath="/configuration/connectionStrings/add[\[]@name='DashboardContext'[\]]/@connectionString"
 							  Value="Data Source=[DB_SERVER];Initial Catalog=PerformanceDashboard;User Id=[DB_USER];Password=[DB_PASSWORD];MultipleActiveResultSets=true;" Permanent="yes" />
 			</Component>
 

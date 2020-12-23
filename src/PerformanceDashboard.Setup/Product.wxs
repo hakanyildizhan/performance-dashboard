@@ -91,6 +91,9 @@
     <!-- Setup UI -->
     <UIRef Id="MainUI" />
 
+	<!-- Disable "Change" option in Add/Remove Programs -->
+	<Property Id="ARPNOMODIFY" Value="yes" Secure="yes" />
+		
     <!-- Binary definition for custom actions -->
     <Binary Id='PerformanceDashboard.Setup.CustomActions.CA.dll' SourceFile='..\PerformanceDashboard.Setup.CustomActions\bin\$(var.Configuration)\PerformanceDashboard.Setup.CustomActions.CA.dll'/>
 

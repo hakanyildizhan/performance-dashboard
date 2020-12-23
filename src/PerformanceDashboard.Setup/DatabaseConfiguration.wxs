@@ -74,19 +74,22 @@
                        ExecuteOnUninstall="no"
                        BinaryKey="TablesBin"
                        ContinueOnError="no"
-                       User="SQLUser" SqlDb="SqlDatabaseSAUser" />
+                       User="SQLUser" 
+					   SqlDb="SqlDatabaseSAUser"
+					   Sequence="1" />
 
 		<sql:SqlString Id="SqlScriptProjectNameSAUser"
-					   SQL="USE [PerformanceDashboard]
-                            GO
-                            IF NOT EXISTS(SELECT 1 FROM [dbo].[Settings] WHERE [Name] = N'ProjectName')
-                            BEGIN
-	                            INSERT [dbo].[Settings] ([Name], [Value]) VALUES (N'ProjectName', N'[PROJECT_NAME]')
+					   SQL="USE [\[]PerformanceDashboard[\]]
+                            IF NOT EXISTS(SELECT 1 FROM [\[]dbo[\]].[\[]Settings[\]] Where [\[]Key[\]] = N'ProjectName') 
+                            BEGIN 
+	                            INSERT [\[]dbo[\]].[\[]Settings[\]] ([\[]Key[\]], [\[]Value[\]]) VALUES (N'ProjectName', N'[PROJECT_NAME]') 
                             END"
 					   ExecuteOnInstall="yes"
 					   ExecuteOnUninstall="no"
 					   ContinueOnError="no"
-					   User="SQLUser" SqlDb="SqlDatabaseSAUser"/>
+					   User="SQLUser" 
+					   SqlDb="SqlDatabaseSAUser"
+					   Sequence="2" />
 
         <sql:SqlScript Id="SqlScriptDropDBSAUser"
                        ExecuteOnInstall="no"
@@ -122,18 +125,21 @@
                        ExecuteOnInstall="yes"
                        ExecuteOnUninstall="no"
                        BinaryKey="TablesBin"
-                       ContinueOnError="no" SqlDb="SqlDatabaseWinUser" />
+                       ContinueOnError="no" 
+					   SqlDb="SqlDatabaseWinUser" 
+					   Sequence="1" />
 
 		<sql:SqlString Id="SqlScriptProjectNameWinUser"
-					   SQL="USE [PerformanceDashboard]
-                            GO
-                            IF NOT EXISTS(SELECT 1 FROM [dbo].[Settings] WHERE [Name] = N'ProjectName')
-                            BEGIN
-	                            INSERT [dbo].[Settings] ([Name], [Value]) VALUES (N'ProjectName', N'[PROJECT_NAME]')
+					   SQL="USE [\[]PerformanceDashboard[\]]
+                            IF NOT EXISTS(SELECT 1 FROM [\[]dbo[\]].[\[]Settings[\]] Where [\[]Key[\]] = N'ProjectName') 
+                            BEGIN 
+	                            INSERT [\[]dbo[\]].[\[]Settings[\]] ([\[]Key[\]], [\[]Value[\]]) VALUES (N'ProjectName', N'[PROJECT_NAME]') 
                             END"
 					   ExecuteOnInstall="yes"
 					   ExecuteOnUninstall="no"
-				       ContinueOnError="no" SqlDb="SqlDatabaseWinUser"/>
+				       ContinueOnError="no" 
+		               SqlDb="SqlDatabaseWinUser" 
+					   Sequence="2"/>
 
         <sql:SqlScript Id="SqlScriptDropDBWinUser"
                        ExecuteOnInstall="no"
