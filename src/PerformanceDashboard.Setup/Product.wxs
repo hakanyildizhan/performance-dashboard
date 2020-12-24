@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension">
+	<Product Id="*"
+           UpgradeCode="B2018E0F-98C0-4C81-BFE4-5977ACDA9C30"
+           Name="Performance Dashboard" 
+           Language="1033" 
+           Version="$(var.BuildVersion)" 
+           Manufacturer="Hakan Yildizhan" >
+    
+		<Package Id="*"
+             Description="Installer for Performance Dashboard"
+             Keywords="Installer"
+             Manufacturer="Hakan Yildizhan"
+             Platform="x64"
+             InstallerVersion="200" 
+             Compressed="yes" 
+             InstallScope="perMachine" />
+
+    <!-- For Minor Updates: Comment this. -->
+    <!-- For Major Upgrade: Uncomment this, comment Upgrade tag -->
+    <!-- It will remove all previous versions from Add\Remove Programs & install this new version -->
+    <!-- Beware: It will also reinstall IIS site & Database, removing all data! -->
+    <!-- Then in order to deliver minor updates again: -->
+    <!-- - Uncomment RemoveExistingProducts tag -->
+    <!-- - Up the UpgradeVersions below accordingly -->
+	<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed. Setup will now exit." />
+
+    <!-- This is for minor updates to get installed side by side -->
+    <!-- Always up these versions to the Current product version -->
+    <!-- Comment it when delivering a major upgrade -->
+    <!--<Upgrade Id='B2018E0F-98C0-4C81-BFE4-5977ACDA9C30'>
+      <UpgradeVersion OnlyDetect='yes' Property='SELFFOUND'
+          Minimum='$(var.BuildVersion)' IncludeMinimum='yes'
+          Maximum='$(var.BuildVersion)' IncludeMaximum='yes' />
+      <UpgradeVersion OnlyDetect='yes' Property='NEWERFOUND'
+          Minimum='$(var.BuildVersion)' IncludeMinimum='no' />
+      <UpgradeVersion OnlyDetect='yes' Property='OLDERFOUND'
+          Maximum='$(var.BuildVersion)' IncludeMaximum='no' />
+    </Upgrade>-->
+
+    <InstallExecuteSequence>
+      <Custom Action='AlreadyUpdated' After='FindRelatedProducts'>SELFFOUND</Custom>
+      <Custom Action='NoDowngrade' After='FindRelatedProducts'>NEWERFOUND</Custom>
+    </InstallExecuteSequence>
+
+    <CustomAction Id='AlreadyUpdated' Error='[ProductName] has already been updated to $(var.BuildVersion) or newer.' />
+    <CustomAction Id='NoDowngrade' Error='A later version of [ProductName] is already installed.' />
+
+    <!-- Include .cab file into .msi file -->
+    <MediaTemplate EmbedCab="yes" />
+
+    <!-- Feature for application files -->
+    <Feature Id="ApplicationFilesFeature" 
+             Title="Application files"
+             Description="Installs required files for the application."
+             Display='expand'
+             ConfigurableDirectory='INSTALLFOLDER'
+             >
+
+      <ComponentGroupRef Id="PublishedComponents" />
+      <ComponentGroupRef Id="TransformWebConfig" />
+    </Feature>
+
+    <!-- Feature for IIS configuration -->
+    <Feature Id="IISConfigurationFeature"
+             Title="Server IIS configuration"
+             Description="Configures the web site on Internet Information Services (IIS)."
+             Display='expand' >
+
+      <ComponentGroupRef Id="IISConfiguration" />
+      <ComponentGroupRef Id="ProjectSettings" />
+    </Feature>
+
+    <!-- Feature for database configuration -->
+    <Feature Id="DatabaseConfigurationFeature"
+             Title="Database configuration"
+             Description="Configures the database."
+             Display='expand'>
+
+      <ComponentGroupRef Id="DatabaseConfiguration" />
+    </Feature>
+
+    <!-- Define main app icon -->
+    <Icon Id="icon.ico" SourceFile="$(var.PublishPath)\favicon.ico" />
+    <Property Id="ARPPRODUCTICON" Value="icon.ico" />
+
+    <!-- App license -->
+    <WixVariable Id="WixUILicenseRtf" Value="license.rtf"/>
+
+    <!-- Setup UI -->
+    <UIRef Id="MainUI" />
+
+	<!-- Disable "Change" option in Add/Remove Programs -->
+	<Property Id="ARPNOMODIFY" Value="yes" Secure="yes" />
+		
+    <!-- Binary definition for custom actions -->
+    <Binary Id='PerformanceDashboard.Setup.CustomActions.CA.dll' SourceFile='..\PerformanceDashboard.Setup.CustomActions\bin\$(var.Configuration)\PerformanceDashboard.Setup.CustomActions.CA.dll'/>
+
+    <!-- Checks if the given port is available -->
+    <!-- If it is valid, sets IIS_PORT_AVAILABLE to "1"  -->
+    <CustomAction Id='CustomAction_TestPort'
+                  BinaryKey='PerformanceDashboard.Setup.CustomActions.CA.dll'
+                  DllEntry='TestPort'
+                  Execute='immediate'
+                  Return='check'/>
+
+    <!-- Checks the database connection -->
+    <!-- If it is valid, sets DB_SERVER_OK to "1"  -->
+    <CustomAction Id='CustomAction_TestConnection'
+                  BinaryKey='PerformanceDashboard.Setup.CustomActions.CA.dll'
+                  DllEntry='TestConnection'
+                  Execute='immediate'
+                  Return='check'/>
+
+    <!-- Gives the App Pool necessary DB permissions -->
+    <CustomAction Id='CustomAction_GrantDatabasePermissions'
+                  BinaryKey='PerformanceDashboard.Setup.CustomActions.CA.dll'
+                  DllEntry='GrantDatabasePermissions'
+                  Return='check'/>
+    <!-- Run after setup is finalized -->
+    <InstallExecuteSequence>
+      <Custom Action='CustomAction_GrantDatabasePermissions' After='InstallFinalize' >NOT Installed</Custom>
+    </InstallExecuteSequence>
+
+    <!-- Load user profile for the App Pool -->
+    <CustomAction Id='CustomAction_LoadUserProfileForAppPool'
+                  Execute='deferred'
+                  Impersonate='no'
+                  Directory='INSTALLFOLDER'
+                  ExeCommand='C:\Windows\System32\inetsrv\appcmd.exe set apppool "PerformanceDashboard" -processmodel.loaduserprofile:"true" -processmodel.setProfileEnvironment:"true"'
+                  Return='check'/>
+    <!-- Run after installation, before setup is finalized -->
+    <InstallExecuteSequence>
+      <Custom Action='CustomAction_LoadUserProfileForAppPool' Before='InstallFinalize'>NOT Installed</Custom>
+    </InstallExecuteSequence>
+
+    <!-- Check if .Net Framework 4.6.1 is installed -->
+    <PropertyRef Id="WIX_IS_NETFRAMEWORK_461_OR_LATER_INSTALLED" />
+    <Condition Message="[ProductName] requires .NET Framework 4.6.1 or higher.">
+      <![CDATA[Installed OR WIX_IS_NETFRAMEWORK_461_OR_LATER_INSTALLED]]>
+    </Condition>
+
+    <!-- Check to see if IIS is installed. It it's not, error out. -->
+    <Property Id="IIS_MAJOR_VERSION">
+      <RegistrySearch Id="CheckIISVersion"
+                      Root="HKLM"
+                      Key="SOFTWARE\Microsoft\InetStp"
+                      Name="MajorVersion"
+                      Type="raw" />
+    </Property>
+
+    <Condition Message="IIS must be installed">
+      Installed OR IIS_MAJOR_VERSION
+    </Condition>
+    
+    <!-- Go find the IIS root directory from the registry. On most machines
+         that defaults to C:\inetpub\wwwroot. This will be the directory we
+         install into. -->
+    <Property Id="IISROOT">
+      <RegistrySearch Id="IISROOT"
+                                 Type="directory"
+                                 Root="HKLM"
+                                 Key="Software\Microsoft\InetStp"
+                                 Name="PathWWWRoot" />
+    </Property>
+    
+    <Condition Message="IIS does not appear to be installed correctly, the root directory is not set.">
+      Installed OR IISROOT
+    </Condition>
+    
+	</Product>
+
+</Wix>

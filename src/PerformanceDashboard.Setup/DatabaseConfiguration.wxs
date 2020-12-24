@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+         xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
+         xmlns:sql="http://schemas.microsoft.com/wix/SqlExtension">
+  <Fragment>
+
+    <!-- Properties -->
+    <Property Id="DB_USER">
+      <RegistrySearch Id="DB_USER_RegistrySearch"
+                      Root="HKLM"
+                      Key="Software\Hakan Yildizhan\PerformanceDashboard"
+                      Name="DB_USER"
+                      Type="raw"/>
+    </Property>
+
+    <Property Id="DB_PASSWORD">
+      <RegistrySearch Id="DB_PASSWORD_RegistrySearch"
+                      Root="HKLM"
+                      Key="Software\Hakan Yildizhan\PerformanceDashboard"
+                      Name="DB_PASSWORD"
+                      Type="raw"/>
+    </Property>
+
+    <Property Id="DB_SERVER" >
+      <RegistrySearch Id="DB_SERVER_RegistrySearch"
+                      Root="HKLM"
+                      Key="Software\Hakan Yildizhan\PerformanceDashboard"
+                      Name="DB_SERVER"
+                      Type="raw"/>
+    </Property>
+
+    <Property Id="DB_AUTHENTICATIONMODE" Value="0">
+      <RegistrySearch Id="DB_AUTHENTICATIONMODE_RegistrySearch"
+                      Root="HKLM"
+                      Key="Software\Hakan Yildizhan\PerformanceDashboard"
+                      Name="DB_AUTHENTICATIONMODE"
+                      Type="raw"/>
+    </Property>
+
+    <Property Id="DB_SERVER_OK" Value="0" />
+	<Property Id="PROJECT_NAME" />
+
+    <!-- Components -->
+    <ComponentGroup Id="DatabaseConfiguration">
+      <ComponentRef Id="SqlComponentSAUser" />
+      <ComponentRef Id="SqlComponentWinUser" />
+      <ComponentRef Id="SqlComponentRegistryEntries" />
+    </ComponentGroup>
+
+	<!-- On install -->
+    <Binary Id="TablesBin" SourceFile="Scripts/OnInstall/Tables_v1.0.0.sql"></Binary>
+
+    <!-- On uninstall -->
+    <Binary Id="DropDBBin" SourceFile="Scripts/OnUninstall/DropDatabase.sql"></Binary>
+    <Binary Id="DropLoginBin" SourceFile="Scripts/OnUninstall/DropLogin.sql"></Binary>
+
+    <util:User Id="SQLUser" Name="[DB_USER]" Password="[DB_PASSWORD]"></util:User>
+
+    <DirectoryRef Id="INSTALLFOLDER">
+
+      <Component Id="SqlComponentSAUser" Guid="{83A97E0B-C110-4508-816B-F41D5B7C426A}" KeyPath="yes">
+        <Condition><![CDATA[DB_AUTHENTICATIONMODE = "1"]]></Condition>
+
+        <sql:SqlDatabase Id="SqlDatabaseSAUser"
+                         Database="PerformanceDashboard"
+                         Server="[DB_SERVER]"
+                         CreateOnInstall="yes"
+                         DropOnUninstall="yes"
+                         User="SQLUser"
+                         ContinueOnError="yes"/>
+
+        <sql:SqlScript Id="SqlScriptTablesSAUser"
+                       ExecuteOnInstall="yes"
+                       ExecuteOnUninstall="no"
+                       BinaryKey="TablesBin"
+                       ContinueOnError="no"
+                       User="SQLUser" 
+					   SqlDb="SqlDatabaseSAUser"
+					   Sequence="1" />
+
+		<sql:SqlString Id="SqlScriptProjectNameSAUser"
+					   SQL="USE [\[]PerformanceDashboard[\]]
+                            IF NOT EXISTS(SELECT 1 FROM [\[]dbo[\]].[\[]Settings[\]] Where [\[]Key[\]] = N'ProjectName') 
+                            BEGIN 
+	                            INSERT [\[]dbo[\]].[\[]Settings[\]] ([\[]Key[\]], [\[]Value[\]]) VALUES (N'ProjectName', N'[PROJECT_NAME]') 
+                            END"
+					   ExecuteOnInstall="yes"
+					   ExecuteOnUninstall="no"
+					   ContinueOnError="no"
+					   User="SQLUser" 
+					   SqlDb="SqlDatabaseSAUser"
+					   Sequence="2" />
+
+        <sql:SqlScript Id="SqlScriptDropDBSAUser"
+                       ExecuteOnInstall="no"
+                       ExecuteOnUninstall="yes"
+                       BinaryKey="DropDBBin"
+                       ContinueOnError="yes"
+                       User="SQLUser" SqlDb="SqlDatabaseSAUser"
+                       Sequence="1" />
+
+        <sql:SqlScript Id="SqlScriptDropLoginSAUser"
+                       ExecuteOnInstall="no"
+                       ExecuteOnUninstall="yes"
+                       BinaryKey="DropLoginBin"
+                       ContinueOnError="yes"
+                       User="SQLUser" SqlDb="SqlDatabaseSAUser"
+                       Sequence="2" />
+
+        <!--</sql:SqlDatabase>-->
+
+      </Component>
+
+      <Component Id="SqlComponentWinUser" Guid="{6BCDF3D4-FBC9-4E0E-BB7D-1FE94F0A4D75}" KeyPath="yes">
+        <Condition><![CDATA[DB_AUTHENTICATIONMODE = "0"]]></Condition>
+
+        <sql:SqlDatabase Id="SqlDatabaseWinUser"
+                         Database="PerformanceDashboard"
+                         Server="[DB_SERVER]"
+                         CreateOnInstall="yes"
+                         DropOnUninstall="yes"
+                         ContinueOnError="yes"/>
+
+        <sql:SqlScript Id="SqlScriptTablesWinUser"
+                       ExecuteOnInstall="yes"
+                       ExecuteOnUninstall="no"
+                       BinaryKey="TablesBin"
+                       ContinueOnError="no" 
+					   SqlDb="SqlDatabaseWinUser" 
+					   Sequence="1" />
+
+		<sql:SqlString Id="SqlScriptProjectNameWinUser"
+					   SQL="USE [\[]PerformanceDashboard[\]]
+                            IF NOT EXISTS(SELECT 1 FROM [\[]dbo[\]].[\[]Settings[\]] Where [\[]Key[\]] = N'ProjectName') 
+                            BEGIN 
+	                            INSERT [\[]dbo[\]].[\[]Settings[\]] ([\[]Key[\]], [\[]Value[\]]) VALUES (N'ProjectName', N'[PROJECT_NAME]') 
+                            END"
+					   ExecuteOnInstall="yes"
+					   ExecuteOnUninstall="no"
+				       ContinueOnError="no" 
+		               SqlDb="SqlDatabaseWinUser" 
+					   Sequence="2"/>
+
+        <sql:SqlScript Id="SqlScriptDropDBWinUser"
+                       ExecuteOnInstall="no"
+                       ExecuteOnUninstall="yes"
+                       BinaryKey="DropDBBin"
+                       ContinueOnError="yes" SqlDb="SqlDatabaseWinUser"
+                       Sequence="1"/>
+
+        <sql:SqlScript Id="SqlScriptDropLoginWinUser"
+                       ExecuteOnInstall="no"
+                       ExecuteOnUninstall="yes"
+                       BinaryKey="DropLoginBin"
+                       ContinueOnError="yes" SqlDb="SqlDatabaseWinUser"
+                       Sequence="2"/>
+
+        <!--</sql:SqlDatabase>-->
+
+      </Component>
+
+      <Component Id="SqlComponentRegistryEntries" Guid="{ED2A2E17-782B-404F-9720-D774FF61E860}">
+
+        <RegistryKey Root="HKLM"
+                     Key="Software\Hakan Yildizhan\PerformanceDashboard">
+          <RegistryValue Type="string" Name="DB_AUTHENTICATIONMODE" Value="[DB_AUTHENTICATIONMODE]" />
+        </RegistryKey>
+
+        <RegistryKey Root="HKLM"
+                     Key="Software\Hakan Yildizhan\PerformanceDashboard">
+          <RegistryValue Type="string" Name="DB_SERVER" Value="[DB_SERVER]" />
+        </RegistryKey>
+
+        <RegistryKey Root="HKLM"
+                     Key="Software\Hakan Yildizhan\PerformanceDashboard">
+          <RegistryValue Type="string" Name="DB_USER" Value="[DB_USER]" />
+        </RegistryKey>
+
+        <RegistryKey Root="HKLM"
+                     Key="Software\Hakan Yildizhan\PerformanceDashboard">
+          <RegistryValue Type="string" Name="DB_PASSWORD" Value="[DB_PASSWORD]" />
+        </RegistryKey>
+
+      </Component>
+    </DirectoryRef>
+  </Fragment>
+</Wix>
