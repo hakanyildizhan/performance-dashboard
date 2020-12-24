@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+	<!-- Identifier that must be unique within the hosting gallery -->
+    <id>PerformanceDashboardComponents</id>
+	
+	<!-- Package version number that is used when resolving dependencies -->
+    <version>1.0.0</version>
+	
+	
+    <title>Performance Dashboard Components</title>
+	
+	<!-- Authors contain text that appears directly on the gallery -->
+    <authors>Hakan Yıldızhan</authors>
+	
+	<!-- 
+		Owners are typically nuget.org identities that allow gallery
+		users to easily find other packages by the same owners.  
+	-->
+	<owners>Hakan Yıldızhan</owners>
+	
+	<!-- 
+		If true, this value prompts the user to accept the license when
+		installing the package. 
+	-->
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+	
+	<!-- License information is displayed on the gallery -->
+    <license type="expression">MIT</license>
+	
+	<!-- Project URL provides a link for the gallery -->
+    <projectUrl>https://code.siemens.com/hakan.yildizhan/performance-dashboard</projectUrl>
+    
+	<!-- 
+		The description can be used in package manager UI. Note that the
+		nuget.org gallery uses information you add in the portal. 
+	-->
+	<description>This package contains components to integrate your test results into the Performance Dashboard.</description>
+	
+	<!-- Any details about this particular release -->
+    <releaseNotes>Initial release.</releaseNotes>
+	
+	<!-- Copyright information -->
+    <copyright>Copyright © 2020 Hakan Yildizhan</copyright>
+	
+	<!-- Icon is used in Visual Studio's package manager UI -->
+	<icon>content/images/icon.png</icon>
+	
+	<!-- Tags appear in the gallery and can be used for tag searches -->
+    <tags>performance dashboard measurement</tags>
+	
+	<!-- Dependencies are automatically installed when the package is installed -->
+	<dependencies>
+	  <group targetFramework=".NETFramework4.5" >
+		<dependency id="EntityFramework" version="6.4.4" />
+	  </group>
+      
+    </dependencies>
+  </metadata>
+</package>
