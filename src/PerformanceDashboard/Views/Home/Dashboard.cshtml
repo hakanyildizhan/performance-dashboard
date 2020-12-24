@@ -179,6 +179,7 @@
          */
         function updateChartOnConfigurationChange() {
             if (dashboardViewModel.Configurations.length === 0) {
+                setChartLoadingStatus(false);
                 google.visualization.errors.addError(chartElement, "No test configuration data to display.");
                 return;
             }

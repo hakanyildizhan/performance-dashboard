@@ -29,6 +29,13 @@ namespace PerformanceDashboard.Service
         {
             if (configurationId == 0)
             {
+                var configurations = _db.TestConfigurations.ToList();
+
+                if (!configurations.Any())
+                {
+                    return null;
+                }
+
                 configurationId = _db.TestConfigurations.First().Id;
             }
 
@@ -195,6 +202,13 @@ namespace PerformanceDashboard.Service
         {
             if (configurationId == 0)
             {
+                var configurations = _db.TestConfigurations.ToList();
+
+                if (!configurations.Any())
+                {
+                    return null;
+                }
+
                 configurationId = _db.TestConfigurations.First().Id;
             }
 

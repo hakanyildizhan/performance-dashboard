@@ -22,21 +22,20 @@ namespace PerformanceDashboard.Controllers
 
         public async Task<JsonResult> GetConfigurationData(int configurationId = 0)
         {
-            var model = new DashboardModel();
             var settings = await _dataService.GetSettings();
-            model.ProjectName = settings.ContainsKey(AppConstants.PROJECT_NAME) ? settings[AppConstants.PROJECT_NAME] : string.Empty;
-            model.Scenarios = await _dataService.GetScenarios(configurationId);
-            model.Configurations = _dataService.GetConfigurations();
-            model.TestRuns = await _dataService.GetTestRuns(configurationId, false);
-            model.MaxResultsToShow = _dataService.GetDaysToShow();
+            var scenarios = await _dataService.GetScenarios(configurationId);
+            var testRuns = await _dataService.GetTestRuns(configurationId, false);
+            var projectName = settings.ContainsKey(AppConstants.PROJECT_NAME) ? settings[AppConstants.PROJECT_NAME] : string.Empty;
+            var configurations = _dataService.GetConfigurations();
+            var maxResultsToShow = _dataService.GetDaysToShow();
 
-            return Json(new 
-            { 
-                ProjectName = model.ProjectName, 
-                Scenarios = model.Scenarios, 
-                Configurations = model.Configurations, 
-                TestRuns = model.TestRuns.ToArray(),
-                MaxResultsToShow = model.MaxResultsToShow
+            return Json(new
+            {
+                ProjectName = projectName,
+                Scenarios = scenarios,
+                Configurations = configurations,
+                TestRuns = testRuns?.ToArray(),
+                MaxResultsToShow = maxResultsToShow
             }, JsonRequestBehavior.AllowGet);
         }
 
@@ -55,7 +54,7 @@ namespace PerformanceDashboard.Controllers
                 data.ScenarioNames = new List<string> { scenario };
                 data.Runs = await _dataService.GetScenarioRuns(configurationId, scenario, true);
             }
-            
+
             return Json(data);
         }
 
