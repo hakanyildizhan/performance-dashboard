@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace PerformanceDashboard.Model
 {
+    /// <summary>
+    /// For use as a view model for an MVC Razor page. Currently obsolete.
+    /// </summary>
     public class DashboardModel
     {
         /// <summary>
