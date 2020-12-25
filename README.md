@@ -12,15 +12,15 @@ This is a web application that shows daily test results on a line chart.
 
 1. On the server machine where you'd like to host the live dashboard web application, run the Performance Dashboard installer (see [**Releases page**](https://code.siemens.com/hakan.yildizhan/performance-dashboard/-/releases) to download the .msi setup file)
 2. Integrate Performance Dashboard components into your C# test project. You can do this in two ways:
-	* Add Siemens.Sirius.Integration.Performance.dll (found [here](https://code.siemens.com/hakan.yildizhan/performance-dashboard/-/tree/master/nuget/lib/net45)) as a project reference
-	* Download the .nupkg offline nuget package (see [**Releases page**](https://code.siemens.com/hakan.yildizhan/performance-dashboard/-/releases) and install it for your project via Nuget Package Library
-Note that the client library depends on the **EntityFramework** library, for which you also need to add a reference to your project. (Nuget package installation will automatically do this for you) 
+	* Add Siemens.Sirius.Integration.Performance.dll (see [**Releases page**](https://code.siemens.com/hakan.yildizhan/performance-dashboard/-/releases)) as a project reference
+	* Download the .nupkg offline nuget package (see [**Releases page**](https://code.siemens.com/hakan.yildizhan/performance-dashboard/-/releases)) and install it for your project via Nuget Package Library
+	Note that the client library depends on the **EntityFramework** library, for which you also need to add a reference to your project. (Nuget package installation will automatically do this for you) 
 
 3. In your C# test project, add an App.config file with a connection string with name "**PerformanceDashboardContext**" as shown below:
 ```xml
-	<connectionStrings>
-		<add name="PerformanceDashboardContext" connectionString=" Data Source=[YOUR_DATA_SOURCE];Initial Catalog=PerformanceDashboard;MultipleActiveResultSets=true;[YOUR_SECURITY/LOGIN_INFO];" providerName="System.Data.SqlClient" />
-	</connectionStrings>
+<connectionStrings>
+	<add name="PerformanceDashboardContext" connectionString=" Data Source=[YOUR_DATA_SOURCE];Initial Catalog=PerformanceDashboard;MultipleActiveResultSets=true;[YOUR_SECURITY/LOGIN_INFO];" providerName="System.Data.SqlClient" />
+</connectionStrings>
 ```
 4. Create your custom measurement, using the `Integration.Framework.Performance.Model.Measurement` interface:
 ```csharp
@@ -107,4 +107,3 @@ logger.LogResults(myMeasurements, testInfo);
 IResultLogger logger => _serviceProvider?.Resolve<IResultLogger>();
 logger.LogResults(myMeasurements, testInfo);
 ```
-
