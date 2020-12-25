@@ -108,3 +108,7 @@ logger.LogResults(myMeasurements, testInfo);
 IResultLogger logger => _serviceProvider?.Resolve<IResultLogger>();
 logger.LogResults(myMeasurements, testInfo);
 ```
+
+9. You can then view your test results daily on the Performance Dashboard, for different test scenarios for each test configuration:
+
+![preview](content/screenshot-dashboard.png)
