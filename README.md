@@ -14,7 +14,8 @@ This is a web application that shows daily test results on a line chart.
 2. Integrate Performance Dashboard components into your C# test project. You can do this in two ways:
 	* Add Siemens.Sirius.Integration.Performance.dll (see [**Releases page**](https://code.siemens.com/hakan.yildizhan/performance-dashboard/-/releases)) as a project reference
 	* Download the .nupkg offline nuget package (see [**Releases page**](https://code.siemens.com/hakan.yildizhan/performance-dashboard/-/releases)) and install it for your project via Nuget Package Library
-	Note that the client library depends on the **EntityFramework** library, for which you also need to add a reference to your project. (Nuget package installation will automatically do this for you) 
+	
+Note that the client library depends on the **EntityFramework** library, for which you also need to add a reference to your project. (Nuget package installation will automatically do this for you) 
 
 3. In your C# test project, add an App.config file with a connection string with name "**PerformanceDashboardContext**" as shown below:
 ```xml
